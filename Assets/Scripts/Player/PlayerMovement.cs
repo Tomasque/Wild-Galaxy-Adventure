@@ -4,12 +4,18 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] Rigidbody rb;
-    List<PlanetGravity> activePlanets = new List<PlanetGravity>();
     public static PlayerMovement instance;
+
+    [SerializeField] Rigidbody rb;
     [SerializeField] float walkSpeed;
-    float forward = 0;
-    float rightward = 0;
+    [SerializeField] Transform cam;
+
+    List<PlanetGravity> activePlanets = new List<PlanetGravity>();
+
+    Vector3 prevVelocity = Vector3.zero;
+    float forward = 0f;
+    float rightward = 0f;
+    float xRotation = 0f;
 
     private void Awake()
     {
@@ -19,8 +25,6 @@ public class PlayerMovement : MonoBehaviour
     private void FixedUpdate()
     {
         Vector3 down = Vector3.zero;
-        Transform strongestPlanet = null;
-        float strongestGravity = 0;
 
         foreach(PlanetGravity p in activePlanets)
         {
@@ -29,29 +33,20 @@ public class PlayerMovement : MonoBehaviour
             float gravity = Mathf.Lerp(p.outerGravity, p.innerGravity, t);
 
             down += gravity * distanceVector.normalized;
-
-            if(Mathf.Sign(gravity)> strongestGravity)
-            {
-                strongestPlanet = p.transform;
-            }
-            
         }
 
         rb.AddForce(down);
-        transform.rotation = Quaternion.FromToRotation(Vector3.down, down.normalized);
 
-        Vector3 tangentialVelocity = (transform.forward * forward + transform.right * rightward).normalized * walkSpeed;
-        rb.velocity += tangentialVelocity;
-
-        if (strongestPlanet != null)
+        if(down != Vector3.zero)
         {
-            Vector3 centripetalForce = down.normalized * (rb.mass * tangentialVelocity.sqrMagnitude) / strongestPlanet.lossyScale.x;
-            rb.AddForce(centripetalForce);
+            transform.rotation = Quaternion.FromToRotation(Vector3.down, down.normalized);
         }
-    }
 
-    private void Update()
-    {
+
+        xRotation += Input.GetAxisRaw("Mouse X");
+
+        xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+
         forward = 0;
         rightward = 0;
 
@@ -59,6 +54,10 @@ public class PlayerMovement : MonoBehaviour
         if (Input.GetKey(KeyCode.S)) forward--;
         if (Input.GetKey(KeyCode.A)) rightward++;
         if (Input.GetKey(KeyCode.D)) rightward--;
+        if (Input.GetKey(KeyCode.D)) rightward--;
+
+        Vector3 tangentialDisplacement = (transform.forward * forward + transform.right * rightward).normalized * walkSpeed * Time.fixedDeltaTime;
+        rb.MovePosition(transform.position + tangentialDisplacement);
     }
 
     public void addPlanet(PlanetGravity x)
