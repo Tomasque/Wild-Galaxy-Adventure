@@ -7,15 +7,19 @@ public class PlanetGravity : MonoBehaviour
     public float outerGravity;
     public float innerGravity;
 
+    private void Awake()
+    {
+        gameObject.layer = 6;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
-        print("a ");
-        PlayerMovement.instance.addPlanet(this);
+        other.SendMessage("addPlanet", this);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        PlayerMovement.instance.removePlanet(this);
+        other.SendMessage("removePlanet", this);
     }
 
 }
