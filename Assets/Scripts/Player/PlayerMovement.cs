@@ -32,7 +32,7 @@ public class PlayerMovement : GravityObject
         //Vector3 forward = Vector3.forward * Input.GetAxisRaw("Vertical");
         //Vector3 right = Vector3.right * Input.GetAxisRaw("Horizontal");
 
-        Vector3 planetForward = Vector3.Cross(Vector3.Cross(forwardUp, cam.transform.forward), up).normalized;
+        Vector3 planetForward = Vector3.Cross(Vector3.Cross(forwardUp, cam.transform.up), up).normalized;
         Vector3 planetRight = Vector3.Cross(up, Vector3.Cross(cam.transform.right, rightUp)).normalized;
 
         Vector3 newForward = planetForward * 0.1f, newRight = planetRight * 0.1f;
@@ -43,7 +43,7 @@ public class PlayerMovement : GravityObject
             Debug.DrawLine(prevPointF, prevPointF + newForward, Color.black);
             prevPointF += newForward;
             Vector3 newUp = prevPointF - activePlanets[0].transform.position;
-            newForward = Vector3.Cross(Vector3.Cross(up, cam.transform.forward), newUp).normalized * 0.1f;
+            newForward = Vector3.Cross(Vector3.Cross(up, cam.transform.up), newUp).normalized * 0.1f;
 
 
             Debug.DrawLine(prevPointR, prevPointR + newRight, Color.green);
@@ -98,18 +98,22 @@ public class PlayerMovement : GravityObject
         if (Input.GetKeyUp(KeyCode.W))
         {
             forward.z--;
+            forwardUp = down == Vector3.zero ? transform.up : -down.normalized;
         }
         if (Input.GetKeyUp(KeyCode.S))
         {
             forward.z++;
+            forwardUp = down == Vector3.zero ? transform.up : -down.normalized;
         }
         if (Input.GetKeyUp(KeyCode.D))
         {
             right.x--;
+            rightUp = down == Vector3.zero ? transform.up : -down.normalized;
         }
         if (Input.GetKeyUp(KeyCode.A))
         {
             right.x++;
+            rightUp = down == Vector3.zero ? transform.up : -down.normalized;
         }
 
         if (Input.GetKeyDown(KeyCode.Space)) isJumping = true;
