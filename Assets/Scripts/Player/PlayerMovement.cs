@@ -30,8 +30,10 @@ public class PlayerMovement : GravityObject
         Vector3 forward = Vector3.forward * Input.GetAxisRaw("Vertical");
         Vector3 right = Vector3.right * Input.GetAxisRaw("Horizontal");
 
-        Vector3 planetForward = Vector3.Cross(cam.transform.right, up).normalized;
-        Vector3 planetRight = Vector3.Cross(up, planetForward).normalized;
+        Vector3 tempPlanetRight = Vector3.Cross(up, cam.transform.up).normalized;
+        Vector3 tempPlanetForward = Vector3.Cross(cam.transform.right, up).normalized;
+        Vector3 planetForward = Vector3.Cross(tempPlanetRight, up).normalized;
+        Vector3 planetRight = Vector3.Cross(up, tempPlanetForward).normalized;
 
         Debug.DrawLine(transform.position, transform.position + planetForward * 2f, Color.green);
         Debug.DrawLine(transform.position, transform.position + planetRight * 2f, Color.green);
