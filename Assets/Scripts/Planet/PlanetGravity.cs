@@ -6,6 +6,7 @@ public class PlanetGravity : MonoBehaviour
 {
     public float outerGravity;
     public float innerGravity;
+    public Transform cam;
 
     private void Awake()
     {

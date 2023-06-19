@@ -9,10 +9,10 @@ public class PlayerMovement : GravityObject
     [SerializeField] float jumpForce;
     [SerializeField] float walkSpeed;
     [SerializeField] float mouseSpeed;
-    [SerializeField] Transform cam;
+
+    [SerializeField] Cam cam;
 
     private bool isJumping = false;
-    float xRotation = 0f;
 
     private void Awake()
     {
@@ -26,17 +26,24 @@ public class PlayerMovement : GravityObject
 
         Vector3 up = down == Vector3.zero ? transform.up : -down.normalized;
 
-        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, up) * transform.rotation;
-        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, down.magnitude * Time.deltaTime); ;
 
-        //xRotation -= Input.GetAxisRaw("Mouse Y") * mouseSpeed;
-        //xRotation = Mathf.Clamp(xRotation, -90f, 90f);
-        //cam.localEulerAngles = new Vector3(xRotation, cam.localEulerAngles.y, cam.localEulerAngles.z) ;
+        Vector3 forward = Vector3.forward * Input.GetAxisRaw("Vertical");
+        Vector3 right = Vector3.right * Input.GetAxisRaw("Horizontal");
 
-        transform.rotation = Quaternion.AngleAxis(Input.GetAxisRaw("Mouse X") * mouseSpeed, up) * transform.rotation;
+        Vector3 planetForward = Vector3.Cross(cam.transform.right, up).normalized;
+        Vector3 planetRight = Vector3.Cross(up, planetForward).normalized;
 
-        Vector3 tangentialDisplacement = (transform.forward * Input.GetAxisRaw("Vertical") + transform.right * Input.GetAxisRaw("Horizontal")).normalized * walkSpeed * Time.deltaTime;
-        rb.MovePosition(transform.position + tangentialDisplacement);
+        Debug.DrawLine(transform.position, transform.position + planetForward * 2f, Color.green);
+        Debug.DrawLine(transform.position, transform.position + planetRight * 2f, Color.green);
+
+        Debug.DrawLine(transform.position, transform.position + planetForward * 2f, Color.black);
+        Vector3 translation = ((Quaternion.FromToRotation(Vector3.forward, planetForward) * forward) + (Quaternion.FromToRotation(Vector3.right, planetRight) * right)).normalized * walkSpeed;
+
+
+        rb.MovePosition(rb.position + translation);
+
+        Quaternion targetRotation = Quaternion.FromToRotation(transform.up, up) * Quaternion.FromToRotation(transform.forward, translation) * transform.rotation;
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, down.magnitude * Time.deltaTime);
 
         if (isJumping)
         {
@@ -47,6 +54,29 @@ public class PlayerMovement : GravityObject
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Space)) isJumping = true;
+        if (Input.GetKeyDown(KeyCode.Space)) isJumping = true;
     }
+
+
+    new void addPlanet(PlanetGravity p)
+    {
+        base.addPlanet(p);
+        if (activePlanets.Count == 1)
+        {
+            cam.setCam(p);
+        }
+    }
+    new void removePlanet(PlanetGravity p)
+    {
+        base.removePlanet(p);
+        if (activePlanets.Count == 1)
+        {
+            cam.setCam(activePlanets[0]);
+        }
+        else if(activePlanets.Count == 0)
+        {
+            cam.setCam();
+        }
+    }
+
 }
