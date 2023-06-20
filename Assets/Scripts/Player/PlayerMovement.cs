@@ -57,27 +57,31 @@ public class PlayerMovement : GravityObject
 
         if (activePlanets.Count == 1)
         {
-            float forwardAngle = Vector3.SignedAngle(up, cam.transform.up, cam.transform.right);
-            float rightAngle = Vector3.SignedAngle(cam.transform.right, up, cam.transform.up);
+            Transform target = cam.target;
+
+            float forwardAngle = Vector3.SignedAngle(up, target.up, target.right);
+            
 
             if (forwardAngle < 50)
             {
-                cam.target.parent.rotation = Quaternion.AngleAxis(50 - forwardAngle, cam.transform.right) * cam.target.parent.rotation;
+                target.parent.rotation = Quaternion.AngleAxis(50 - forwardAngle, target.right) * target.parent.rotation;
             }
 
             if (forwardAngle > 130)
             {
-                cam.target.parent.rotation = Quaternion.AngleAxis(130 - forwardAngle, cam.transform.right) * cam.target.parent.rotation;
+                target.parent.rotation = Quaternion.AngleAxis(130 - forwardAngle, target.right) * target.parent.rotation;
             }
+
+            float rightAngle = Vector3.SignedAngle(target.right, up, target.up);
 
             if (rightAngle < 50)
             {
-                cam.target.parent.rotation = Quaternion.AngleAxis(rightAngle - 50, cam.transform.up) * cam.target.parent.rotation;
+                target.parent.rotation = Quaternion.AngleAxis(rightAngle - 50, target.up) * target.parent.rotation;
             }
 
             if (rightAngle > 130)
             {
-                cam.target.parent.rotation = Quaternion.AngleAxis(rightAngle - 130, cam.transform.up) * cam.target.parent.rotation;
+                target.parent.rotation = Quaternion.AngleAxis(rightAngle - 130, target.up) * target.parent.rotation;
             }
         }
 
