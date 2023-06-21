@@ -26,37 +26,33 @@ public class PlayerMovement : GravityObject
     {
         base.FixedUpdate();
 
+        //Get relative up (either from planet or player character)
         Vector3 up = down == Vector3.zero ? transform.up : -down.normalized;
 
+        //Get relative forward and right
+        Vector3 planetForward = Vector3.Cross(Vector3.Cross(up, cam.transform.up), up).normalized;
+        Vector3 planetRight = Vector3.Cross(up, Vector3.Cross(cam.transform.right, up)).normalized;
 
-        //Vector3 forward = Vector3.forward * Input.GetAxisRaw("Vertical");
-        //Vector3 right = Vector3.right * Input.GetAxisRaw("Horizontal");
-
-        Vector3 planetForward = Vector3.Cross(Vector3.Cross(forwardUp, cam.transform.up), up).normalized;
-        Vector3 planetRight = Vector3.Cross(up, Vector3.Cross(cam.transform.right, rightUp)).normalized;
-
-        Vector3 newForward = planetForward * 0.1f, newRight = planetRight * 0.1f;
-        Vector3 prevPointF = transform.position, prevPointR = transform.position;
-
-        for (int i = 0; activePlanets.Count == 1 && i < 380; i++)
-        {
-            Debug.DrawLine(prevPointF, prevPointF + newForward, Color.black);
-            prevPointF += newForward;
-            Vector3 newUp = prevPointF - activePlanets[0].transform.position;
-            newForward = Vector3.Cross(Vector3.Cross(up, cam.transform.up), newUp).normalized * 0.1f;
-
-
-            Debug.DrawLine(prevPointR, prevPointR + newRight, Color.green);
-            prevPointR += newRight;
-            newUp = prevPointR - activePlanets[0].transform.position;
-            newRight = Vector3.Cross(newUp, Vector3.Cross(cam.transform.right, up)).normalized * 0.1f;
-        }
-
+        //Move player, rotating inputs by relative directions
         Vector3 translation = ((Quaternion.FromToRotation(Vector3.forward, planetForward) * forward) + (Quaternion.FromToRotation(Vector3.right, planetRight) * right)).normalized * walkSpeed;
-
-
         rb.MovePosition(rb.position + translation);
 
+
+        //Check if camera needs to move
+        if (activePlanets.Count == 1)
+        {
+            Transform target = cam.target;
+
+            float angle = Vector3.Angle(-target.forward, up);
+
+            if(angle > 50)
+            {
+                Vector3 rotationAxis = Vector3.Cross(-target.forward, up);
+                target.parent.rotation = Quaternion.AngleAxis(angle - 50, rotationAxis) * target.parent.rotation;
+            }
+        }
+
+        //Rotate player character towards movement direction + orient towards planet
         Quaternion targetRotation = Quaternion.FromToRotation(transform.up, up) * Quaternion.FromToRotation(transform.forward, translation) * transform.rotation;
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, down.magnitude * Time.deltaTime);
 

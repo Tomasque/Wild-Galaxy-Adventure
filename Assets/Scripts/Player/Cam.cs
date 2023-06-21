@@ -9,7 +9,7 @@ public class Cam : MonoBehaviour
 
     Vector3 startPos;
     Quaternion startRot;
-    Transform target;
+    public Transform target;
     float progress;
 
     private void Awake()
